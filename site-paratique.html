@@ -11,6 +11,13 @@
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 10px; border: 1px solid #ddd; }
         th { cursor: pointer; background-color: #f4f4f4; }
+        .accordion { cursor: pointer; background-color: #f1f1f1; padding: 10px; border: none; text-align: left; width: 100%; transition: background-color 0.3s ease; }
+        .panel { max-height: 0; overflow: hidden; transition: max-height 0.2s ease-out; background-color: #f9f9f9; padding: 10px; }
+        #myModal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; background-color: white; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        #modalBackdrop { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); }
+        .carousel img { width: 100%; }
+        .carousel { display: flex; overflow: hidden; width: 300px; }
+        .carousel img { transition: transform 0.5s ease-in-out; }
     </style>
 </head>
 <body>
@@ -51,78 +58,143 @@
         </form>
     </div>
 
-    <!-- Tableau interactif -->
+    <!-- Glisser-déposer -->
     <div class="section">
-        <h2>Tableau</h2>
-        <table id="test-table">
-            <thead>
-                <tr>
-                    <th onclick="sortTable(0)">Nom</th>
-                    <th onclick="sortTable(1)">Âge</th>
-                    <th onclick="sortTable(2)">Genre</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr><td>Jean</td><td>30</td><td>Homme</td></tr>
-                <tr><td>Marie</td><td>25</td><td>Femme</td></tr>
-                <tr><td>Luc</td><td>35</td><td>Homme</td></tr>
-            </tbody>
-        </table>
+        <h2>Drag and Drop</h2>
+        <div id="drag1" draggable="true" ondragstart="drag(event)" style="width: 100px; height: 100px; background-color: blue;"></div>
+        <div id="dropzone" ondrop="drop(event)" ondragover="allowDrop(event)" style="width: 100px; height: 100px; border: 2px dashed #ccc; margin-top: 10px;"></div>
     </div>
 
-    <!-- Boutons de test -->
+    <!-- Slider -->
     <div class="section">
-        <h2>Boutons</h2>
-        <button id="click-button">Clic ici</button>
-        <button id="dblclick-button">Double-clic ici</button>
+        <h2>Slider</h2>
+        <label for="slider">Volume :</label>
+        <input type="range" id="slider" name="volume" min="0" max="100">
+    </div>
+
+    <!-- Accordéon -->
+    <div class="section">
+        <h2>Accordéon</h2>
+        <button class="accordion">Section 1</button>
+        <div class="panel">
+            <p>Contenu de la section 1</p>
+        </div>
+        <button class="accordion">Section 2</button>
+        <div class="panel">
+            <p>Contenu de la section 2</p>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="section">
+        <h2>Barre de progression</h2>
+        <progress id="progressBar" value="0" max="100" style="width: 100%;"></progress>
+        <button onclick="moveProgress()">Commencer la progression</button>
+    </div>
+
+    <!-- Modale -->
+    <div class="section">
+        <h2>Modale</h2>
+        <button onclick="showModal()">Afficher la modale</button>
+        <div id="modalBackdrop"></div>
+        <div id="myModal">
+            <p>Ceci est une modale.</p>
+            <button onclick="closeModal()">Fermer</button>
+        </div>
+    </div>
+
+    <!-- Carrousel -->
+    <div class="section">
+        <h2>Carrousel d'images</h2>
+        <div class="carousel">
+            <img src="https://via.placeholder.com/300" alt="Image 1">
+            <img src="https://via.placeholder.com/300" alt="Image 2">
+            <img src="https://via.placeholder.com/300" alt="Image 3">
+        </div>
+        <button onclick="prevSlide()">Précédent</button>
+        <button onclick="nextSlide()">Suivant</button>
+    </div>
+
+    <!-- Sélecteur de date -->
+    <div class="section">
+        <h2>Sélecteur de date</h2>
+        <input type="date" id="datePicker">
     </div>
 
     <!-- Script pour les interactions -->
     <script>
-        document.getElementById('click-button').addEventListener('click', function() {
-            alert('Bouton cliqué');
-        });
+        // Drag and Drop
+        function allowDrop(ev) {
+            ev.preventDefault();
+        }
+        function drag(ev) {
+            ev.dataTransfer.setData("text", ev.target.id);
+        }
+        function drop(ev) {
+            ev.preventDefault();
+            var data = ev.dataTransfer.getData("text");
+            ev.target.appendChild(document.getElementById(data));
+        }
 
-        document.getElementById('dblclick-button').addEventListener('dblclick', function() {
-            alert('Bouton double-cliqué');
-        });
-
-        function sortTable(n) {
-            var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-            table = document.getElementById("test-table");
-            switching = true;
-            dir = "asc";
-            while (switching) {
-                switching = false;
-                rows = table.rows;
-                for (i = 1; i < (rows.length - 1); i++) {
-                    shouldSwitch = false;
-                    x = rows[i].getElementsByTagName("TD")[n];
-                    y = rows[i + 1].getElementsByTagName("TD")[n];
-                    if (dir == "asc") {
-                        if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    } else if (dir == "desc") {
-                        if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    }
-                }
-                if (shouldSwitch) {
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                    switching = true;
-                    switchcount++;
+        // Accordéon
+        var acc = document.getElementsByClassName("accordion");
+        for (var i = 0; i < acc.length; i++) {
+            acc[i].addEventListener("click", function() {
+                this.classList.toggle("active");
+                var panel = this.nextElementSibling;
+                if (panel.style.maxHeight) {
+                    panel.style.maxHeight = null;
                 } else {
-                    if (switchcount == 0 && dir == "asc") {
-                        dir = "desc";
-                        switching = true;
-                    }
+                    panel.style.maxHeight = panel.scrollHeight + "px";
+                }
+            });
+        }
+
+        // Progress Bar
+        function moveProgress() {
+            var elem = document.getElementById("progressBar");
+            var width = 0;
+            var id = setInterval(frame, 20);
+            function frame() {
+                if (width >= 100) {
+                    clearInterval(id);
+                } else {
+                    width++;
+                    elem.value = width;
                 }
             }
         }
+
+        // Modale
+        function showModal() {
+            document.getElementById('myModal').style.display = 'block';
+            document.getElementById('modalBackdrop').style.display = 'block';
+        }
+        function closeModal() {
+            document.getElementById('myModal').style.display = 'none';
+            document.getElementById('modalBackdrop').style.display = 'none';
+        }
+
+        // Carrousel
+        var slideIndex = 0;
+        function showSlides() {
+            var slides = document.getElementsByClassName("carousel")[0].getElementsByTagName("img");
+            for (var i = 0; i < slides.length; i++) {
+                slides[i].style.transform = "translateX(" + (-slideIndex * 300) + "px)";
+            }
+        }
+        function nextSlide() {
+            var slides = document.getElementsByClassName("carousel")[0].getElementsByTagName("img");
+            slideIndex = (slideIndex + 1) % slides.length;
+            showSlides();
+        }
+        function prevSlide() {
+            var slides = document.getElementsByClassName("carousel")[0].getElementsByTagName("img");
+            slideIndex = (slideIndex - 1 + slides.length) % slides.length;
+            showSlides();
+        }
+
     </script>
+
 </body>
 </html>
